@@ -109,10 +109,19 @@
 
             const addActiveElement = (element) => {
                 let activeCircle = chart.circle(0, 0, 1000);
+                let activeText = chart.text(950, 0, element.text).wrap(400);
                 activeCircle.attr({
                     fill: element.color
                 });
-                activeCircle.click(() => {
+                activeText.attr({
+                    "text-anchor":"middle",
+                    'font-size': 20
+                });
+                let t = new Snap.Matrix()
+                t.rotate(-90, activeText.getBBox().x + activeText.getBBox().w/2, 0);
+                activeText.transform(t);
+                let activeElement = chart.group(activeCircle, activeText);
+                activeElement.click(() => {
                     setCurrentElement(element.id)
                     redraw();
                 });
@@ -137,7 +146,7 @@
                     "text-anchor":"middle",
                     'font-size': 20
                 });
-                var t = new Snap.Matrix()
+                let t = new Snap.Matrix()
                 t.translate(0, -childText.getBBox().h/2 + 20);
                 childText.transform(t);
                 childElements[index] = chart.group(childCircle, childText);
