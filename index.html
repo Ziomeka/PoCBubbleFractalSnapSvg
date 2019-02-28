@@ -147,12 +147,14 @@
                     setCurrentElement(element.id);
                     redraw();
                 });
+                return childElements[index];
             }
 
             const setScene = (element) => {
                 addActiveElement(element);
+                childrenGroup = chart.g();
                 element.children.forEach((child, index) => {
-                    addChildElement(data[child], index);
+                    childrenGroup.add(addChildElement(data[child], index));
                 });
                 changeMarker = false;
             };
