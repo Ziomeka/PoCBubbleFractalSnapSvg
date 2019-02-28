@@ -152,7 +152,7 @@
 
             const setScene = (element) => {
                 addActiveElement(element);
-                childrenGroup = chart.g();
+                let childrenGroup = chart.g().attr({id: 'children'});
                 element.children.forEach((child, index) => {
                     childrenGroup.add(addChildElement(data[child], index));
                 });
@@ -168,21 +168,21 @@
 
             setScene(data[0]);
             document.querySelector('.up').addEventListener('click', () => {
-                const step = 1 * Math.PI / 180;
-                currentCameraAngle += step;
-                startX = 900 * Math.cos(currentCameraAngle);
-                startY = 900 * Math.sin(currentCameraAngle) -height/2;
-                viewBox = startX + " " + startY + " " + width + " " + height;
-                chart.attr("viewBox", viewBox);
+                const step = 1;
+                currentCameraAngle -= step;
+                let t = new Snap.Matrix()
+                t.rotate(currentCameraAngle, 0, 0);
+                let children = chart.select('#children')
+                children.transform(t);
             });
 
             document.querySelector('.dwn').addEventListener('click', () => {
-                const step = 1 * Math.PI / 180;
-                currentCameraAngle -= step;
-                startX = 900 * Math.cos(currentCameraAngle);
-                startY = 900 * Math.sin(currentCameraAngle) -height/2;
-                viewBox = startX + " " + startY + " " + width + " " + height;
-                chart.attr("viewBox", viewBox);
+                const step = 1;
+                currentCameraAngle += step;
+                let t = new Snap.Matrix()
+                t.rotate(currentCameraAngle, 0, 0);
+                let children = chart.select('#children')
+                children.transform(t);
             })
 
         });
