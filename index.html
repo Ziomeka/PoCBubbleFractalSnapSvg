@@ -167,22 +167,32 @@
             let currentCameraAngle = 0;
 
             setScene(data[0]);
-            document.querySelector('.up').addEventListener('click', () => {
+
+            let move = (direction) => {
                 const step = 1;
-                currentCameraAngle -= step;
+                if (direction === 'up') {
+                    currentCameraAngle -= step;
+                } else if (direction === 'dwn') {
+                    currentCameraAngle += step;
+                }
                 let t = new Snap.Matrix()
                 t.rotate(currentCameraAngle, 0, 0);
                 let children = chart.select('#children')
                 children.transform(t);
+                let texts = children.selectAll('text');
+                texts.forEach((text) => {
+                    let r = new Snap.Matrix()
+                    r.rotate(-currentCameraAngle, text.getBBox().x + text.getBBox().w/2, text.getBBox().y + text.getBBox().h/2 - 20)
+                    r.translate(0, -text.getBBox().h/2 + 20);
+                    text.transform(r);
+                })
+            };
+            document.querySelector('.up').addEventListener('click', () => {
+                move('up');
             });
 
             document.querySelector('.dwn').addEventListener('click', () => {
-                const step = 1;
-                currentCameraAngle += step;
-                let t = new Snap.Matrix()
-                t.rotate(currentCameraAngle, 0, 0);
-                let children = chart.select('#children')
-                children.transform(t);
+               move('dwn');
             })
 
         });
