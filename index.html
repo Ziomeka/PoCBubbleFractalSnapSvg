@@ -25,6 +25,7 @@
     <button class='dwn'>dwn</button>
     <svg class="chart"></svg>
     <script src="js/snap.svg-min.js"></script>
+    <script src="js/snap-rapineda-text.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded',function(){
             const data = [
@@ -37,7 +38,7 @@
                 {
                     id: 1,
                     color: '#ff4000',
-                    text: 'Element 1',
+                    text: 'Element 1 - some longer title',
                     children: [3, 4, 5],
                     parent: 0
                 },
@@ -104,7 +105,6 @@
                 } else {
                     curentElement = 0;
                 }
-                console.log(curentElement);
             }
 
             const addActiveElement = (element) => {
@@ -129,7 +129,7 @@
             let childElements = [];
             const addChildElement = (element, index) => {
                 let childCircle = chart.circle(childPosition(index, 1150, 10, -10).x, childPosition(index, 1150, 10, -10).y, 75);
-                let childText = chart.text(childPosition(index, 1150, 10, -10).x, childPosition(index, 1150, 10, -10).y, element.text);
+                let childText = chart.text(childPosition(index, 1150, 10, -10).x, childPosition(index, 1150, 10, -10).y, element.text).wrap(75);
                 childCircle.attr({
                     fill: element.color
                 });
@@ -137,12 +137,14 @@
                     "text-anchor":"middle",
                     'font-size': 20
                 });
+                var t = new Snap.Matrix()
+                t.translate(0, -childText.getBBox().h/2 + 20);
+                childText.transform(t);
                 childElements[index] = chart.group(childCircle, childText);
                 childElements[index].click(() => {
                     setCurrentElement(element.id);
                     redraw();
                 });
-                console.log(childElements[index]);
             }
 
             const setScene = (element) => {
