@@ -173,11 +173,12 @@
                 t.rotate(currentCameraAngle, 0, 0);
                 let children = chart.select('#children')
                 children.transform(t);
-                let texts = children.selectAll('text');
-                texts.forEach((text) => {
-                    let r = new Snap.Matrix()
-                    r.rotate(-currentCameraAngle, text.getBBox().x + text.getBBox().w/2, text.getBBox().y + text.getBBox().h/2 - 20)
-                    r.translate(0, -text.getBBox().h/2 + 20);
+                let texts = children.selectAll('g');
+                texts.forEach((text, index) => {
+                    let centerX = text.select('circle').getBBox().cx;
+                    let centerY = text.select('circle').getBBox().cy;
+                    let r = new Snap.Matrix();
+                    r.rotate(-currentCameraAngle, centerX, centerY)
                     text.transform(r);
                 })
             }
