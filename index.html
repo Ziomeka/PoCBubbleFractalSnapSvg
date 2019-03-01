@@ -76,15 +76,32 @@
             //     },
             // ];
 
-            let width = window.innerWidth, height = window.innerHeight;
-            let startX = 900;
-            let startY = -height/2;
-            let viewBox = startX + " " + startY + " " + width + " " + height;
-            let chart = Snap('.chart');
-            chart.attr({viewBox:viewBox, height: height, width: width});
+            const ACTIVE_CIRCLE_RADIUS = 1000,
+            ACTIVE_CIRCLE_TEXT_WIDTH = 400,
+            CHILD_CIRCLE_RADIUS = 75
+            CHILD_CIRCLE_POSITION_RADIUS = 1150,
+            CHILDREN_DISTANCE_IN_ANGLE = 10,
+            CHILDREN_START_POSITION_ANGLE = -10,
+            GAP_HEIGHT = 50,
+            PAGE_HEIGHT_PER_CHILD = 2 * CHILD_CIRCLE_RADIUS + GAP_HEIGHT,
+            FONT_SIZE = 20;
+
+            const width = window.innerWidth,
+            height = window.innerHeight,
+            viewPortStartPositionX = 900,
+            viewPortStartPositionY = - height / 2,
+            viewBox = `${viewPortStartPositionX} ${viewPortStartPositionY} ${width} ${height}`;
 
             let curentElement = 0;
             let changeMarker = false;
+
+            let chart = Snap('.chart');
+            chart.attr({
+                viewBox:viewBox,
+                height: height,
+                width: width
+            });
+
             const setCurrentElement = (index) => {
                 if (index !== curentElement) {
                     curentElement = index;
@@ -98,17 +115,17 @@
             }
 
             const addActiveElement = (element) => {
-                let activeCircle = chart.circle(0, 0, 1000);
-                let activeText = chart.text(950, 0, element.text).wrap(400);
+                let activeCircle = chart.circle(0, 0, ACTIVE_CIRCLE_RADIUS);
+                let activeText = chart.text(ACTIVE_CIRCLE_RADIUS - 50, 0, element.text).wrap(ACTIVE_CIRCLE_TEXT_WIDTH);
                 activeCircle.attr({
                     fill: element.color
                 });
                 activeText.attr({
                     "text-anchor":"middle",
-                    'font-size': 20
+                    'font-size': FONT_SIZE
                 });
                 let t = new Snap.Matrix()
-                t.rotate(-90, activeText.getBBox().x + activeText.getBBox().w/2, 0);
+                t.rotate(-90, activeText.getBBox().x + activeText.getBBox().w / 2, 0);
                 activeText.transform(t);
                 let activeElement = chart.group(activeCircle, activeText);
                 activeElement.click(() => {
@@ -127,17 +144,18 @@
 
             let childElements = [];
             const addChildElement = (element, index) => {
-                let childCircle = chart.circle(childPosition(index, 1150, 10, -10).x, childPosition(index, 1150, 10, -10).y, 75);
-                let childText = chart.text(childPosition(index, 1150, 10, -10).x, childPosition(index, 1150, 10, -10).y, element.text).wrap(75);
+                let position = childPosition(index, CHILD_CIRCLE_POSITION_RADIUS, CHILDREN_DISTANCE_IN_ANGLE, CHILDREN_START_POSITION_ANGLE);
+                let childCircle = chart.circle(position.x, position.y, CHILD_CIRCLE_RADIUS);
+                let childText = chart.text(position.x, position.y, element.text).wrap(CHILD_CIRCLE_RADIUS);
                 childCircle.attr({
                     fill: element.color
                 });
                 childText.attr({
                     "text-anchor":"middle",
-                    'font-size': 20
+                    'font-size': FONT_SIZE
                 });
                 let t = new Snap.Matrix()
-                t.translate(0, -childText.getBBox().h/2 + 20);
+                t.translate(0, - childText.getBBox().h / 2 + FONT_SIZE);
                 childText.transform(t);
                 childElements[index] = chart.group(childCircle, childText);
                 childElements[index].click(() => {
@@ -148,10 +166,13 @@
             }
 
             const setScene = (element) => {
-                let pageWidth = `${200*element.children.length+100}px`
+                let pageWidth = `${PAGE_HEIGHT_PER_CHILD * element.children.length + 2 * GAP_HEIGHT}px`
                 document.querySelector('body').style.height = pageWidth;
                 addActiveElement(element);
-                let childrenGroup = chart.g().attr({id: 'children'});
+                let childrenGroup = chart.g()
+                    .attr({
+                        id: 'children'
+                    });
                 element.children.forEach((child, index) => {
                     childrenGroup.add(addChildElement(data[child], index));
                 });
@@ -164,13 +185,9 @@
                 setScene(data[curentElement]);
             }
 
-            let currentCameraAngle = 0;
-
-            setScene(data[0]);
-
             let moveOnScroll = () => {
                 let scrollPosition = window.scrollY || document.documentElement.scrollTop;
-                currentCameraAngle = -scrollPosition / 20;
+                currentCameraAngle = -scrollPosition / (PAGE_HEIGHT_PER_CHILD / CHILDREN_DISTANCE_IN_ANGLE);
                 let t = new Snap.Matrix()
                 t.rotate(currentCameraAngle, 0, 0);
                 let children = chart.select('#children')
@@ -185,6 +202,8 @@
                 })
             }
 
+            let currentCameraAngle = 0;
+            setScene(data[0]);
             window.addEventListener('scroll', moveOnScroll);
 
         });
