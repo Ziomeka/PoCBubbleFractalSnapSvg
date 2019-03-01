@@ -148,7 +148,8 @@
             }
 
             const setScene = (element) => {
-                document.querySelector('body').style.height = `3600px`;
+                let pageWidth = `${200*element.children.length+100}px`
+                document.querySelector('body').style.height = pageWidth;
                 addActiveElement(element);
                 let childrenGroup = chart.g().attr({id: 'children'});
                 element.children.forEach((child, index) => {
@@ -158,6 +159,7 @@
             };
 
             const redraw = () => {
+                window.scrollTo(0, 0);
                 chart.clear();
                 setScene(data[curentElement]);
             }
@@ -168,7 +170,7 @@
 
             let moveOnScroll = () => {
                 let scrollPosition = window.scrollY || document.documentElement.scrollTop;
-                currentCameraAngle = -scrollPosition / 10;
+                currentCameraAngle = -scrollPosition / 20;
                 let t = new Snap.Matrix()
                 t.rotate(currentCameraAngle, 0, 0);
                 let children = chart.select('#children')
