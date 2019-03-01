@@ -15,75 +15,93 @@
     <svg class="chart"></svg>
     <script src="js/snap.svg-min.js"></script>
     <script src="js/snap-rapineda-text.js"></script>
+    <script src="js/data.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded',function(){
-            const data = [
-                {
-                    id: 0,
-                    color: '#008080',
-                    text: 'Root element',
-                    children: [1, 2]
-                },
-                {
-                    id: 1,
-                    color: '#ff4000',
-                    text: 'Element 1 - some longer title',
-                    children: [3, 4, 5],
-                    parent: 0
-                },
-                {
-                    id: 2,
-                    color: '#ffbf00',
-                    text: 'Element 2',
-                    children: [6, 7],
-                    parent: 0
-                },
-                {
-                    id: 3,
-                    color: '#00ffff',
-                    children: [],
-                    text: 'Element 1.1',
-                    parent: 1
-                },
-                {
-                    id: 4,
-                    color: '#bfff00',
-                    text: 'Element 1.2',
-                    children: [],
-                    parent: 1
-                },
-                {
-                    id: 5,
-                    color: '#80ff00',
-                    children: [],
-                    text: 'Element 1.3',
-                    parent: 1
-                },
-                {
-                    id: 6,
-                    color: '#40ff00',
-                    children: [],
-                    text: 'Element 2.1',
-                    parent: 2
-                },
-                {
-                    id: 7,
-                    color: '#8000ff',
-                    text: 'Element 2.2',
-                    children: [],
-                    parent: 2
-                },
-            ];
+            // const data = [
+            //     {
+            //         id: 0,
+            //         color: '#008080',
+            //         text: 'Root element',
+            //         children: [1, 2]
+            //     },
+            //     {
+            //         id: 1,
+            //         color: '#ff4000',
+            //         text: 'Element 1 - some longer title',
+            //         children: [3, 4, 5],
+            //         parent: 0
+            //     },
+            //     {
+            //         id: 2,
+            //         color: '#ffbf00',
+            //         text: 'Element 2',
+            //         children: [6, 7],
+            //         parent: 0
+            //     },
+            //     {
+            //         id: 3,
+            //         color: '#00ffff',
+            //         children: [],
+            //         text: 'Element 1.1',
+            //         parent: 1
+            //     },
+            //     {
+            //         id: 4,
+            //         color: '#bfff00',
+            //         text: 'Element 1.2',
+            //         children: [],
+            //         parent: 1
+            //     },
+            //     {
+            //         id: 5,
+            //         color: '#80ff00',
+            //         children: [],
+            //         text: 'Element 1.3',
+            //         parent: 1
+            //     },
+            //     {
+            //         id: 6,
+            //         color: '#40ff00',
+            //         children: [],
+            //         text: 'Element 2.1',
+            //         parent: 2
+            //     },
+            //     {
+            //         id: 7,
+            //         color: '#8000ff',
+            //         text: 'Element 2.2',
+            //         children: [],
+            //         parent: 2
+            //     },
+            // ];
 
-            let width = window.innerWidth, height = window.innerHeight;
-            let startX = 900;
-            let startY = -height/2;
-            let viewBox = startX + " " + startY + " " + width + " " + height;
-            let chart = Snap('.chart');
-            chart.attr({viewBox:viewBox, height: height, width: width});
+            const ACTIVE_CIRCLE_RADIUS = 1000,
+            ACTIVE_CIRCLE_TEXT_WIDTH = 400,
+            CHILD_CIRCLE_RADIUS = 75
+            CHILD_CIRCLE_POSITION_RADIUS = 1150,
+            CHILDREN_DISTANCE_IN_ANGLE = 10,
+            CHILDREN_START_POSITION_ANGLE = -10,
+            GAP_HEIGHT = 50,
+            PAGE_HEIGHT_PER_CHILD = 2 * CHILD_CIRCLE_RADIUS + GAP_HEIGHT,
+            FONT_SIZE = 20;
+
+            const width = window.innerWidth,
+            height = window.innerHeight,
+            viewPortStartPositionX = 900,
+            viewPortStartPositionY = - height / 2,
+            viewBox = `${viewPortStartPositionX} ${viewPortStartPositionY} ${width} ${height}`;
 
             let curentElement = 0;
             let changeMarker = false;
+
+            let chart = Snap('.chart');
+            chart.attr({
+                viewBox:viewBox,
+                height: height,
+                width: width
+            });
+
             const setCurrentElement = (index) => {
                 if (index !== curentElement) {
                     curentElement = index;
@@ -97,17 +115,17 @@
             }
 
             const addActiveElement = (element) => {
-                let activeCircle = chart.circle(0, 0, 1000);
-                let activeText = chart.text(950, 0, element.text).wrap(400);
+                let activeCircle = chart.circle(0, 0, ACTIVE_CIRCLE_RADIUS);
+                let activeText = chart.text(ACTIVE_CIRCLE_RADIUS - 50, 0, element.text).wrap(ACTIVE_CIRCLE_TEXT_WIDTH);
                 activeCircle.attr({
                     fill: element.color
                 });
                 activeText.attr({
                     "text-anchor":"middle",
-                    'font-size': 20
+                    'font-size': FONT_SIZE
                 });
                 let t = new Snap.Matrix()
-                t.rotate(-90, activeText.getBBox().x + activeText.getBBox().w/2, 0);
+                t.rotate(-90, activeText.getBBox().x + activeText.getBBox().w / 2, 0);
                 activeText.transform(t);
                 let activeElement = chart.group(activeCircle, activeText);
                 activeElement.click(() => {
@@ -126,17 +144,18 @@
 
             let childElements = [];
             const addChildElement = (element, index) => {
-                let childCircle = chart.circle(childPosition(index, 1150, 10, -10).x, childPosition(index, 1150, 10, -10).y, 75);
-                let childText = chart.text(childPosition(index, 1150, 10, -10).x, childPosition(index, 1150, 10, -10).y, element.text).wrap(75);
+                let position = childPosition(index, CHILD_CIRCLE_POSITION_RADIUS, CHILDREN_DISTANCE_IN_ANGLE, CHILDREN_START_POSITION_ANGLE);
+                let childCircle = chart.circle(position.x, position.y, CHILD_CIRCLE_RADIUS);
+                let childText = chart.text(position.x, position.y, element.text).wrap(CHILD_CIRCLE_RADIUS);
                 childCircle.attr({
                     fill: element.color
                 });
                 childText.attr({
                     "text-anchor":"middle",
-                    'font-size': 20
+                    'font-size': FONT_SIZE
                 });
                 let t = new Snap.Matrix()
-                t.translate(0, -childText.getBBox().h/2 + 20);
+                t.translate(0, - childText.getBBox().h / 2 + FONT_SIZE);
                 childText.transform(t);
                 childElements[index] = chart.group(childCircle, childText);
                 childElements[index].click(() => {
@@ -147,9 +166,13 @@
             }
 
             const setScene = (element) => {
-                document.querySelector('body').style.height = `3600px`;
+                let pageWidth = `${PAGE_HEIGHT_PER_CHILD * element.children.length + 2 * GAP_HEIGHT}px`
+                document.querySelector('body').style.height = pageWidth;
                 addActiveElement(element);
-                let childrenGroup = chart.g().attr({id: 'children'});
+                let childrenGroup = chart.g()
+                    .attr({
+                        id: 'children'
+                    });
                 element.children.forEach((child, index) => {
                     childrenGroup.add(addChildElement(data[child], index));
                 });
@@ -157,30 +180,30 @@
             };
 
             const redraw = () => {
+                window.scrollTo(0, 0);
                 chart.clear();
                 setScene(data[curentElement]);
             }
 
-            let currentCameraAngle = 0;
-
-            setScene(data[0]);
-
             let moveOnScroll = () => {
                 let scrollPosition = window.scrollY || document.documentElement.scrollTop;
-                currentCameraAngle = -scrollPosition / 10;
+                currentCameraAngle = -scrollPosition / (PAGE_HEIGHT_PER_CHILD / CHILDREN_DISTANCE_IN_ANGLE);
                 let t = new Snap.Matrix()
                 t.rotate(currentCameraAngle, 0, 0);
                 let children = chart.select('#children')
                 children.transform(t);
-                let texts = children.selectAll('text');
-                texts.forEach((text) => {
-                    let r = new Snap.Matrix()
-                    r.rotate(-currentCameraAngle, text.getBBox().x + text.getBBox().w/2, text.getBBox().y + text.getBBox().h/2 - 20)
-                    r.translate(0, -text.getBBox().h/2 + 20);
+                let texts = children.selectAll('g');
+                texts.forEach((text, index) => {
+                    let centerX = text.select('circle').getBBox().cx;
+                    let centerY = text.select('circle').getBBox().cy;
+                    let r = new Snap.Matrix();
+                    r.rotate(-currentCameraAngle, centerX, centerY)
                     text.transform(r);
                 })
             }
 
+            let currentCameraAngle = 0;
+            setScene(data[0]);
             window.addEventListener('scroll', moveOnScroll);
 
         });
